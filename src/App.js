@@ -12,17 +12,36 @@ function App() {
   const[weather,setWeather] = useState(null);
   const[units,setUnits] = useState('metric');
   const[bg,setbg] = useState(HotBg);
+  const [isLoading, setIsLoading] = useState(true);
 
 useEffect(()=>{
   const fetchWeatherData = async () =>{
-    const data = await GetformattedWeatherData(city,units);
-    setWeather(data)
-    console.log(data);
 
-    //dynamic bg
-    const threshold = units === 'metric' ? 20 : 60 ;
-    if(data.temp <= threshold) setbg(coldbg);
-    else setbg(HotBg)
+    setIsLoading(true);
+
+    // const data = await GetformattedWeatherData(city,units);
+    // setWeather(data)
+    // console.log(data);
+
+    // //dynamic bg
+    // const threshold = units === 'metric' ? 20 : 60 ;
+    // if(data.temp <= threshold) setbg(coldbg);
+    // else setbg(HotBg);
+    try {
+      const data = await GetformattedWeatherData(city, units);
+      setWeather(data);
+      console.log(data);
+
+      // Dynamic bg
+      const threshold = units === 'metric' ? 20 : 60;
+      if (data.temp <= threshold) setbg(coldbg);
+      else setbg(HotBg);
+    }
+
+    catch (error) {
+      console.error('Error fetching weather data:', error);
+    }
+
   }
  fetchWeatherData();
 },[units,city])
@@ -39,13 +58,18 @@ const handleUnitsClick = (e)=>{
 
 
 }
-const enterKeypressed = (e) => {
-  if(e.keyCode === 13){
-    setCity(e.currentTarget.value)
-    e.currentTarget.blur();
-    console.log(city)
-  }
+// const enterKeypressed = (e) => {
+//   if(e.keyCode === 13){
+//     setCity(e.currentTarget.value)
+//     e.currentTarget.blur();
+//     console.log(city)
+//   }
 
+// }
+
+const handleCityChange = (e) => {
+  // Update the city state as the user types
+  setCity(e.currentTarget.value);
 }
 
   return (
@@ -53,11 +77,11 @@ const enterKeypressed = (e) => {
     <div className = "overlay">
 
     {
-      weather && (
+      weather ? (
 
         <div className='container'>
         <div className='section section__inputs'>
-          <input onKeyDown={enterKeypressed} type = "text" name = "city" placeholder="Enter City.."/>
+          <input onChange={handleCityChange} type = "text" name = "city" placeholder="Enter City.."/>
           <button onClick={(e)=>handleUnitsClick(e)}>°F</button>
         </div>
 
@@ -75,6 +99,9 @@ const enterKeypressed = (e) => {
         <Description weather = {weather} units={units}/>
       </div>
 
+      ):(
+        // Show loading message or placeholder while waiting for data
+        <div>Loading...</div>
       )
     }
     
